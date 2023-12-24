@@ -108,6 +108,71 @@ class Star(Graph):
         return f"Star(n={self.n})"
 
 
+class Star2(Graph):
+    def __init__(self, n):
+        edges = [(i, n-1) for i in range(n-1)]
+        super().__init__(n, edges)
+
+    def __str__(self):
+        return f"Star2(n={self.n})"
+
+
+class ErdosRenyi(Graph):
+    def __init__(self, n, p):
+        #every edge with probability p
+        edges = []
+        for i in range(n):
+            for j in range(i+1, n):
+                if np.random.uniform() < p:
+                    edges.append((i, j))
+
+        super().__init__(n, edges)
+
+    def __str__(self):
+        return f"ErdosRenyi(n={self.n})"
+
+class BarabasiAlbert(Graph):
+    def __init__(self, n, m):
+        # complete graph until first m nodes
+        edges = []
+        for i in range(m):
+            for j in range(i+1, m):
+                edges.append((i, j))
+
+        # m random edges for each new node in the graph
+        for i in range(m, n):
+            s = np.random.choice(i, m, replace=False)
+            edges.extend([(x, i) for x in s])
+
+
+        super().__init__(n, edges)
+
+    def __str__(self):
+        return f"BarabasiAlbert(n={self.n})"
+
+
+class BarabasiAlbertRev(Graph):
+    def __init__(self, n, m):
+        # The preferential attachment algorithm is run in reverse, 
+        # Byzantine nodes will be high degree nodes
+        # complete graph until first m nodes
+        edges = []
+        for i in range(m):
+            for j in range(i+1, m):
+                edges.append((n-1-i, n-1-j))
+
+        # m random edges for each new node in the graph
+        for i in range(m, n):
+            s = np.random.choice(i, m, replace=False)
+            edges.extend([(n-1-x, n-1-i) for x in s])
+
+
+        super().__init__(n, edges)
+
+    def __str__(self):
+        return f"BarabasiAlbert(n={self.n})"
+
+
 class BinaryTree(Graph):
     def __init__(self, n):
         edges = []
@@ -333,6 +398,26 @@ def get_graph(args):
 
     if args.graph == "star":
         return Star(n=args.n)
+
+    if args.graph == "star2":
+        return Star(n=args.n)
+
+    if args.graph.startswith("er"):
+        _p = args.graph[2:]
+        _p = float(_p)
+        return ErdosRenyi(n=args.n, p=_p)
+
+    if args.graph.startswith("ba"):
+        _m = args.graph[2:]
+        _m = int(_m)
+        return BarabasiAlbert(n=args.n, m=_m)
+
+    if args.graph.startswith("revba"):
+        _m = args.graph[2:]
+        _m = int(_m)
+        return BarabasiAlbertRev(n=args.n, m=_m)
+
+
 
     if args.graph == "binarytree":
         return BinaryTree(n=args.n)
