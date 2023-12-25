@@ -330,6 +330,65 @@ class AverageEvaluator(Evaluator):
             + "\n"
         )
 
+class CliqueEvaluator(AverageEvaluator):
+    def __init__(
+        self,
+        i : int,
+        models: list,
+        data_loader: torch.utils.data.DataLoader,
+        loss_func: torch.nn.modules.loss._Loss,
+        device: Union[torch.device, str],
+        metrics: dict,
+        use_cuda: bool,
+        debug: bool,
+        meta={"type": "Clique validation"},
+    ):
+
+        self.i = i
+        
+        super().__init__(
+            models, data_loader, loss_func, device, metrics, use_cuda, debug, meta
+        )
+
+    def __str__(self):
+        return f"Clique{self.i}Evaluator"
+
+    def evaluate(self, epoch):
+        self._prepare_avg_model()
+
+        r = {
+            "_meta": self.meta,
+            "E": epoch,
+            "Length": 0,
+            "Loss": 0,
+        }
+        for name in self.metrics:
+            r[name] = 0
+
+        with torch.no_grad():
+            for _, (data, target) in enumerate(self.data_loader):
+                data, target = data.to(self.device), target.to(self.device)
+                output = self.model(data)
+                r["Loss"] += self.loss_func(output,
+                                            target).item() * len(target)
+                r["Length"] += len(target)
+
+                for name, metric in self.metrics.items():
+                    r[name] += metric(output, target) * len(target)
+
+        for name in self.metrics:
+            r[name] /= r["Length"]
+        r["Loss"] /= r["Length"]
+
+        # Output to file
+        self.json_logger.info(r)
+        self.debug_logger.info(
+            f"\n=> Clique{self.i} Average model ({r['_meta']['type']}) | Eval Loss={r['Loss']:.4f} "
+            + " ".join(name + "=" +
+                       "{:>8.4f}".format(r[name]) for name in self.metrics)
+            + "\n"
+        )
+
 
 class DecentralizedTrainer(_SimulatorBase):
     """Simulate decentralized programs with (low) memory usage.
