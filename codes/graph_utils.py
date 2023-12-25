@@ -148,7 +148,7 @@ class BarabasiAlbert(Graph):
         super().__init__(n, edges)
 
     def __str__(self):
-        return f"BarabasiAlbert(n={self.n})"
+        return f"BarabasiAlbert(n={self.n}, m={self.m})"
 
 
 class BarabasiAlbertRev(Graph):
@@ -170,7 +170,7 @@ class BarabasiAlbertRev(Graph):
         super().__init__(n, edges)
 
     def __str__(self):
-        return f"BarabasiAlbert(n={self.n})"
+        return f"BarabasiAlbertRev(n={self.n}, m={self.m})"
 
 
 class BinaryTree(Graph):
@@ -187,7 +187,6 @@ class BinaryTree(Graph):
 
     def __str__(self):
         return f"BinaryTree(n={self.n})"
-
 
 class TorusGraph(Graph):
     """
@@ -221,18 +220,24 @@ class SBM(Graph):
     pii = 1, pij = 0.1, two cliques only
     """
 
-    def __init__(self, n, f, pii=1, pij=0.3):
-        # n_cliques is the number of cliques
-        # n is the size of each clique
-        # m is the number of nodes between two cliques
+    def __init__(self, n, f=0, pii=1, pij=0.2):
+        # n is the number of total nodes
+        # f is the number of byzantine nodes not part of cliques (must be even)
+        # we get clique_size = n = (n - f) // 2
         # clique 1: 0,1, ..., n-1
         # clique 2: n,n+1, ..., 2n-1
-        # Connection nodes: 2n, ..., 2n+m-1
+        # Connection nodes: 2n, 2n 
+
+        self.n = n
+        self.f = f
+        
+        n = (n - f) // 2
+        
         edges = []
         for i in range(n - 1):
             for j in range(i + 1, n):
                 
-                if np.random.unform() < pii:
+                if np.random.uniform() < pii:
                     # Add first clique
                     edges.append((i, j))
                     # Add second clique
@@ -243,9 +248,15 @@ class SBM(Graph):
                 if np.random.uniform() < pij:
                     edges.append((i, j + n))
 
-    def __str__(self):
-        return f"SBM(n={self.n},m={self.m})"
+        edges.append((0, 2 * n - 1))
 
+        f = f // 2
+        for i in range(f):
+            edges.append((0, 2 * n + i))
+            edges.append((2 * n - 1, 2 * n + f + i))
+
+    def __str__(self):
+        return f"SBM(n={self.n},f={self.f})"
 
 
 class TwoCliques(Graph):
@@ -453,6 +464,12 @@ def get_graph(args):
 
     if args.graph == "binarytree":
         return BinaryTree(n=args.n)
+
+    if args.graph == "sbm":
+        return SBM(n=args.n)
+
+    if args.graph == "bsbm":
+        return SBM(n=args.n, f=args.f)
 
     if args.graph.startswith("twocliques"):
         # Pattern: twocliques2,1 for n=2 m=1
