@@ -465,11 +465,13 @@ def get_graph(args):
     if args.graph == "binarytree":
         return BinaryTree(n=args.n)
 
-    if args.graph == "sbm":
-        return SBM(n=args.n)
+    if args.graph.startswith("sbm"):
+        pij = float(args.graph[3:])
+        return SBM(n=args.n, pij=pij)
 
     if args.graph == "bsbm":
-        return SBM(n=args.n, f=args.f)
+        pij = float(args.graph[4:])
+        return SBM(n=args.n, f=args.f, pij=pij)
 
     if args.graph.startswith("twocliques"):
         # Pattern: twocliques2,1 for n=2 m=1
