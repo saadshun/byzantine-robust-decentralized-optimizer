@@ -165,7 +165,7 @@ class OptimizationDeltaRunner(MNISTTemplate):
             post_batch_hooks=[
                 check_noniid_hooks,
                 log_global_consensus_distance,
-                # log_clique_consensus_distance,
+                log_clique_consensus_distance,
                 log_mixing_matrix,
             ],
             max_batches_per_epoch=args.max_batch_size_per_epoch,
