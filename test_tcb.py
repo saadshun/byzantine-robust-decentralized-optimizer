@@ -42,6 +42,7 @@ def get_graph(args):
 
 
 def log_global_consensus_distance(trainer, E, B):
+   
     """Log the consensus distance among all good workers."""
     if B % LOG_CONSENSUS_DISTANCE_INTERVAL == 0:
         lg = trainer.debug_logger
@@ -76,6 +77,7 @@ def log_global_consensus_distance(trainer, E, B):
 
 
 def log_clique_consensus_distance(trainer, E, B):
+    
     """Log the consensus distance among all good workers."""
     if B % LOG_CONSENSUS_DISTANCE_INTERVAL == 0:
         lg = trainer.debug_logger
@@ -86,8 +88,11 @@ def log_clique_consensus_distance(trainer, E, B):
         for w in trainer.workers:
             if not isinstance(w, ByzantineWorker):
                 counter += 1
-        clique_size = (counter - 1) // 2
-        assert counter == clique_size * 2 + 1, (clique_size, counter)
+
+        # cliques now have 16 nodes each because I said so
+        # clique_size = (counter - 1) // 2
+        # assert counter == clique_size * 2 + 1, (clique_size, counter)
+        clique_size = 16
 
         mean1, mean2, c = 0, 0, 0
         for w in trainer.workers:
