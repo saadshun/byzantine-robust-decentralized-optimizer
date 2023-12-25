@@ -223,37 +223,39 @@ class SBM(Graph):
     def __init__(self, n, f=0, pii=1, pij=0.2):
         # n is the number of total nodes
         # f is the number of byzantine nodes not part of cliques (must be even)
-        # we get clique_size = n = (n - f) // 2
-        # clique 1: 0,1, ..., n-1
-        # clique 2: n,n+1, ..., 2n-1
-        # Connection nodes: 2n, 2n 
+        # we get clique_size = m = (n - f) // 2
+        # clique 1: 0,1, ..., m-1
+        # clique 2: m,m+1, ..., 2m-1
+        # ff = f/2 byzantine nodes connected to 0 and 2m-1 
 
         self.n = n
         self.f = f
         
-        n = (n - f) // 2
+        m = (n - f) // 2
         
         edges = []
-        for i in range(n - 1):
-            for j in range(i + 1, n):
+        for i in range(m - 1):
+            for j in range(i + 1, m):
                 
                 if np.random.uniform() < pii:
                     # Add first clique
                     edges.append((i, j))
                     # Add second clique
-                    edges.append((i + n, j + n))
+                    edges.append((i + m, j + m))
 
-        for i in range(n):
-            for j in range(n):
+        for i in range(m):
+            for j in range(m):
                 if np.random.uniform() < pij:
-                    edges.append((i, j + n))
+                    edges.append((i, j + m))
 
-        edges.append((0, 2 * n - 1))
+        edges.append((0, 2 * m - 1))
 
-        f = f // 2
-        for i in range(f):
-            edges.append((0, 2 * n + i))
-            edges.append((2 * n - 1, 2 * n + f + i))
+        ff = f // 2
+        for i in range(ff):
+            edges.append((0, 2 * m + i))
+            edges.append((2 * m - 1, 2 * m + ff + i))
+
+        super().__init__(n, edges)
 
     def __str__(self):
         return f"SBM(n={self.n},f={self.f})"
