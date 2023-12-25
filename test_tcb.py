@@ -210,7 +210,36 @@ class OptimizationDeltaRunner(MNISTTemplate):
                 use_cuda=args.use_cuda,
                 debug=args.debug,
                 meta={"type": "Global Average Validation Accuracy"},
-            )
+            ),
+            AverageEvaluator(
+                models=[
+                    w.model
+                    for w in trainer.workers[:(trainer.graph.n - trainer.graph.f)//2],
+                    if not isinstance(w, ByzantineWorker)
+                ],
+                data_loader=test_loader,
+                loss_func=task.loss_func(device),
+                device=device,
+                metrics=task.metrics(),
+                use_cuda=args.use_cuda,
+                debug=args.debug,
+                meta={"type": "Clique0 Average Validation Accuracy"},
+            ),
+            AverageEvaluator(
+                models=[
+                    w.model
+                    for w in trainer.workers[(trainer.graph.n - trainer.graph.f)//2 : (trainer.graph.n - trainer.graph.f)],
+                    if not isinstance(w, ByzantineWorker)
+                ],
+                data_loader=test_loader,
+                loss_func=task.loss_func(device),
+                device=device,
+                metrics=task.metrics(),
+                use_cuda=args.use_cuda,
+                debug=args.debug,
+                meta={"type": "Clique1 Average Validation Accuracy"},
+            ),
+
         ],
     ):
         super().__init__(
