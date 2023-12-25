@@ -216,6 +216,38 @@ class TorusGraph(Graph):
         super().__init__(n, edges)
 
 
+class SBM(Graph):
+    """
+    pii = 1, pij = 0.1, two cliques only
+    """
+
+    def __init__(self, n, f, pii=1, pij=0.3):
+        # n_cliques is the number of cliques
+        # n is the size of each clique
+        # m is the number of nodes between two cliques
+        # clique 1: 0,1, ..., n-1
+        # clique 2: n,n+1, ..., 2n-1
+        # Connection nodes: 2n, ..., 2n+m-1
+        edges = []
+        for i in range(n - 1):
+            for j in range(i + 1, n):
+                
+                if np.random.unform() < pii:
+                    # Add first clique
+                    edges.append((i, j))
+                    # Add second clique
+                    edges.append((i + n, j + n))
+
+        for i in range(n):
+            for j in range(n):
+                if np.random.uniform() < pij:
+                    edges.append((i, j + n))
+
+    def __str__(self):
+        return f"SBM(n={self.n},m={self.m})"
+
+
+
 class TwoCliques(Graph):
     """
     Two cliques (fully connected within clique) connected by m nodes (m \ge 0)
@@ -400,7 +432,7 @@ def get_graph(args):
         return Star(n=args.n)
 
     if args.graph == "star2":
-        return Star(n=args.n)
+        return Star2(n=args.n)
 
     if args.graph.startswith("er"):
         _p = args.graph[2:]
